@@ -20,22 +20,14 @@ def check_tables(engine):
             alt NUMERIC(10, 1),
             vel REAL,
             created_at TIMESTAMP WITHOUT TIME ZONE
-            );"""
+            )
+            SORTKEY(date, lat, lon);"""
         )
         
-def check_index(engine):
-    with engine.begin() as conn:
-            conn.execute("""
-            CREATE UNIQUE INDEX IF NOT EXISTS 
-            idx_fireballs_lat_lon_date_unique 
-            ON jess_conserva_coderhouse.fireballs(lat, lon, date
-            );"""
-        )
-    
+   
     
 def persist_data(data, engine):
     check_tables(engine)
-    check_index(engine)
     schema:str = "jess_conserva_coderhouse"
     table:str = "fireballs"
     data.to_sql(
