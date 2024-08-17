@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from io import StringIO
 import pandas as pd
 from sqlalchemy import create_engine
+from datetime import datetime
 
 def check_tables(engine):
     with engine.begin() as conn:
@@ -17,20 +18,31 @@ def check_tables(engine):
             lon NUMERIC(10, 1),
             lon_dir CHAR(1),
             alt NUMERIC(10, 1),
-            vel REAL
+            vel REAL,
+            created_at TIMESTAMP WITHOUT TIME ZONE
+            );"""
+        )
+        
+def check_index(engine):
+    with engine.begin() as conn:
+            conn.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS 
+            idx_fireballs_lat_lon_date_unique 
+            ON jess_conserva_coderhouse.fireballs(lat, lon, date
             );"""
         )
     
-
+    
 def persist_data(data, engine):
     check_tables(engine)
+    check_index(engine)
     schema:str = "jess_conserva_coderhouse"
     table:str = "fireballs"
     data.to_sql(
                 name=table,
                 con=engine,
                 schema=schema,
-                if_exists='append',
+                if_exists='replace',
                 index=False
     )
     engine.dispose()
@@ -48,6 +60,7 @@ def get_api_data():
                 cols:list[str] = ["date","energy","impact_e","lat","lat_dir","lon","lon_dir","alt","vel"]
                 data_api:pd.DataFrame = pd.DataFrame(data["data"], columns=cols)
                 data = data_api[cols]
+                data['created_at'] = datetime.now()
                 try:
                     data = pd.DataFrame(data)
                     data = data.fillna(0)
