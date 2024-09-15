@@ -1,6 +1,7 @@
 FROM apache/airflow:slim-latest-python3.11
 
 COPY requirements.txt /requirements.txt
+COPY config/airflow.cfg /opt/airflow/airflow.cfg
 
 RUN pip install --no-cache-dir -r /requirements.txt
 
